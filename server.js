@@ -39,11 +39,21 @@ function showPrompt() {
                 viewDepartments()
             } else if(ans.action == 'add a department') {
                 addDepartments()
+            } else if(ans.action == 'view all roles') {
+                viewRoles()
+            } else if(ans.action == 'add a role') {
+                addRole()
             }
         })
 }
 function viewDepartments() {
     db.query('SELECT * FROM department', function(err, data) {
+        console.table(data)
+        showPrompt()
+    })
+}
+function viewRoles() {
+    db.query('SELECT * FROM role', function(err, data) {
         console.table(data)
         showPrompt()
     })
@@ -60,6 +70,22 @@ function addDepartments() {
     .then(ans => {
         db.query(`INSERT INTO department(name) VALUES (?)`, [ans.department_name], function(err, data){
             console.log('Department added!')
+            showPrompt()
+        })
+    })
+}
+function addRole() {
+    inquirer
+    .prompt([
+        {
+            type: 'input',
+            message: 'What is the name of the role?',
+            name: 'role_name'
+        }
+    ])
+    .then(ans => {
+        db.query(`INSERT INTO role(name) VALUES (?)`, [ans.role_name], function(err, data){
+            console.log('Role added!')
             showPrompt()
         })
     })
