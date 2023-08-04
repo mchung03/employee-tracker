@@ -43,9 +43,14 @@ function showPrompt() {
                 viewRoles()
             } else if(ans.action == 'add a role') {
                 addRole()
+            } else if(ans.action == 'view all employees') {
+                viewEmployees()
+            } else if(ans.action == 'add an employee') {
+                addEmployee()
             }
         })
 }
+
 function viewDepartments() {
     db.query('SELECT * FROM department', function(err, data) {
         console.table(data)
@@ -54,6 +59,13 @@ function viewDepartments() {
 }
 function viewRoles() {
     db.query('SELECT * FROM role', function(err, data) {
+        console.log(err)
+        console.table(data)
+        showPrompt()
+    })
+}
+function viewEmployees() {
+    db.query('SELECT * FROM employee', function(err, data) {
         console.table(data)
         showPrompt()
     })
@@ -81,11 +93,38 @@ function addRole() {
             type: 'input',
             message: 'What is the name of the role?',
             name: 'role_name'
+        },
+        {
+            type: 'input',
+            message: 'What is the salary of the role',
+            name: 'salary'
         }
     ])
     .then(ans => {
-        db.query(`INSERT INTO role(name) VALUES (?)`, [ans.role_name], function(err, data){
+        db.query(`INSERT INTO role(title, salary) VALUES (?,?)`, [ans.role_name, ans.salary], function(err, data){
+            console.log(err)
             console.log('Role added!')
+            showPrompt()
+        })
+    })
+}
+function addEmployee() {
+    inquirer
+    .prompt([
+        {
+            type: 'input',
+            message: 'What is the first name of the employee?',
+            name: 'first_name'
+        },
+        {
+            type: 'input',
+            message: 'What is the last name of the employee?',
+            name: 'last_name'
+        }
+    ])
+    .then(ans => {
+        db.query(`INSERT INTO employee(first_name, last_name) VALUES (?,?)`, [ans.first_name, ans.last_name], function(err, data){
+            console.log('Employee added!')
             showPrompt()
         })
     })
