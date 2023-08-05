@@ -47,6 +47,8 @@ function showPrompt() {
                 viewEmployees()
             } else if(ans.action == 'add an employee') {
                 addEmployee()
+            } else if(ans.action == 'update an employee role') {
+                updateEmployeeRole()
             }
         })
 }
@@ -59,7 +61,6 @@ function viewDepartments() {
 }
 function viewRoles() {
     db.query('SELECT * FROM role', function(err, data) {
-        console.log(err)
         console.table(data)
         showPrompt()
     })
@@ -98,10 +99,16 @@ function addRole() {
             type: 'input',
             message: 'What is the salary of the role',
             name: 'salary'
+        },
+        {
+            type: 'list',
+            message: 'Choose the department of the role',
+            name: 'department_id',
+            choices: [db.query(`SELECT name FROM department`)]
         }
     ])
     .then(ans => {
-        db.query(`INSERT INTO role(title, salary) VALUES (?,?)`, [ans.role_name, ans.salary], function(err, data){
+        db.query(`INSERT INTO role(title, salary, department_id) VALUES (?,?,?)`, [ans.role_name, ans.salary, ans.department_id.choices], function(err, data){
             console.log(err)
             console.log('Role added!')
             showPrompt()
@@ -125,6 +132,22 @@ function addEmployee() {
     .then(ans => {
         db.query(`INSERT INTO employee(first_name, last_name) VALUES (?,?)`, [ans.first_name, ans.last_name], function(err, data){
             console.log('Employee added!')
+            showPrompt()
+        })
+    })
+}
+function updateEmployeeRole() {
+    inquirer
+    .prompt([
+        {
+            type: 'input',
+            message: 'What is the name of the new role to replace?',
+            name: 'role'
+        }
+    ])
+    .then(ans => {
+        db.query(`UPDATE employee SET role_id=?`, [ans.role], function(err, data){
+            console.log('Employee role updated!')
             showPrompt()
         })
     })
