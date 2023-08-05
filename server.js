@@ -137,26 +137,26 @@ function addEmployee() {
             console.error(err);
             return;
         }
-        const roleName = roleData.map((row) => row.name)
+        const roleName = roleData.map((row) => row.title)
 
         db.query(`SELECT * FROM employee`, function(err, managerData) {
             if(err) {
                 console.error(err);
                 return;
             }
-            const managerName = managerData.map((row) => row.name);
+            const managerName = managerData.map((row) => `${row.first_name} ${row.last_name}`); 
 
             inquirer
             .prompt([
                 {
                     type: 'input',
                     message: 'What is the first name of the employee?',
-                    name: 'role_name'
+                    name: 'first_name'
                 },
                 {
                     type: 'input',
                     message: 'What is the last name of the employee',
-                    name: 'salary'
+                    name: 'last_name'
                 },
                 {
                     type: 'list',
@@ -172,19 +172,20 @@ function addEmployee() {
                 }
             ])
             .then(ans => {
-                const role = data.find((row) => row.name === ans.role_name);
+                const role = roleData.find((row) => row.title === ans.role_name); 
                 if(!role) {
                     console.error('Role not found!');
                     return;
                 }
                 const role_id = role.id;
+                
+                const manager = managerData.find((row) => `${row.first_name} ${row.last_name}` === ans.manager_name);
 
-                const manager = managerData.find((row) => row.name === ans.manager_name);
-                if(!manager) {
-                    console.error('Manager not found');
-                    return;
+                let manager_id = null;
+
+                if (manager) {
+                    manager_id = manager.id;
                 }
-                const manager_id = employee.id;
 
                 db.query(`INSERT INTO employee(first_name, last_name, role_id, manager_id) VALUES (?,?,?,?)`, [ans.first_name, ans.last_name, role_id, manager_id], function(err, data){
                     if(err) {
