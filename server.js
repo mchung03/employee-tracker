@@ -87,7 +87,14 @@ function addDepartments() {
         })
     })
 }
+
 function addRole() {
+    db.query(`SELECT name FROM department`, function(err, data) {
+        if(err) {
+            console.error(err);
+            return;
+        }
+        const departmentNames = data.map(row => row.name)
     inquirer
     .prompt([
         {
@@ -104,16 +111,22 @@ function addRole() {
             type: 'list',
             message: 'Choose the department of the role',
             name: 'department_id',
-            choices: [db.query(`SELECT name FROM department`)]
+            choices: departmentNames
         }
     ])
     .then(ans => {
-        db.query(`INSERT INTO role(title, salary, department_id) VALUES (?,?,?)`, [ans.role_name, ans.salary, ans.department_id.choices], function(err, data){
-            console.log(err)
+        const department = data.find(row => row.id === ans.department_id)
+        const department_id = department.id;
+        db.query(`INSERT INTO role(title, salary, department_id) VALUES (?,?,?)`, [ans.role_name, ans.salary, department_id], function(err, data){
+            if(err) {
+                console.error(err);
+                return;
+            }
             console.log('Role added!')
             showPrompt()
         })
     })
+})
 }
 function addEmployee() {
     inquirer
