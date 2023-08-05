@@ -59,18 +59,6 @@ function viewDepartments() {
         showPrompt()
     })
 }
-function viewRoles() {
-    db.query('SELECT * FROM role', function(err, data) {
-        console.table(data)
-        showPrompt()
-    })
-}
-function viewEmployees() {
-    db.query('SELECT * FROM employee', function(err, data) {
-        console.table(data)
-        showPrompt()
-    })
-}
 function addDepartments() {
     inquirer
     .prompt([
@@ -87,7 +75,12 @@ function addDepartments() {
         })
     })
 }
-
+function viewRoles() {
+    db.query('SELECT * FROM role', function(err, data) {
+        console.table(data)
+        showPrompt()
+    })
+}
 function addRole() {
     db.query(`SELECT * FROM department`, function(err, data) {
         if(err) {
@@ -132,27 +125,79 @@ function addRole() {
     })
 })
 }
-function addEmployee() {
-    inquirer
-    .prompt([
-        {
-            type: 'input',
-            message: 'What is the first name of the employee?',
-            name: 'first_name'
-        },
-        {
-            type: 'input',
-            message: 'What is the last name of the employee?',
-            name: 'last_name'
-        }
-    ])
-    .then(ans => {
-        db.query(`INSERT INTO employee(first_name, last_name) VALUES (?,?)`, [ans.first_name, ans.last_name], function(err, data){
-            console.log('Employee added!')
-            showPrompt()
-        })
+function viewEmployees() {
+    db.query('SELECT * FROM employee', function(err, data) {
+        console.table(data)
+        showPrompt()
     })
 }
+function addEmployee() {
+    db.query(`SELECT * FROM role`, function(err, roleData) {
+        if(err) {
+            console.error(err);
+            return;
+        }
+        const roleName = roleData.map((row) => row.name)
+
+        db.query(`SELECT * FROM employee`, function(err, managerData) {
+            if(err) {
+                console.error(err);
+                return;
+            }
+            const managerName = managerData.map((row) => row.name);
+
+            inquirer
+            .prompt([
+                {
+                    type: 'input',
+                    message: 'What is the first name of the employee?',
+                    name: 'role_name'
+                },
+                {
+                    type: 'input',
+                    message: 'What is the last name of the employee',
+                    name: 'salary'
+                },
+                {
+                    type: 'list',
+                    message: 'What role does this employee belong to?',
+                    name: 'role_name',
+                    choices: roleName
+                },
+                {
+                    type: 'list',
+                    message: 'Who is the manager of this employee?',
+                    name: 'manager_name',
+                    choices: managerName
+                }
+            ])
+            .then(ans => {
+                const role = data.find((row) => row.name === ans.role_name);
+                if(!role) {
+                    console.error('Role not found!');
+                    return;
+                }
+                const role_id = role.id;
+
+                const manager = managerData.find((row) => row.name === ans.manager_name);
+                if(!manager) {
+                    console.error('Manager not found');
+                    return;
+                }
+                const manager_id = employee.id;
+
+                db.query(`INSERT INTO employee(first_name, last_name, role_id, manager_id) VALUES (?,?,?,?)`, [ans.first_name, ans.last_name, role_id, manager_id], function(err, data){
+                    if(err) {
+                        console.error(err);
+                        return;
+                    }
+                    console.log('Employee added!')
+                    showPrompt()
+                })
+            })
+        })
+        }
+    )}
 function updateEmployeeRole() {
     inquirer
     .prompt([
