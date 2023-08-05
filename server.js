@@ -89,12 +89,12 @@ function addDepartments() {
 }
 
 function addRole() {
-    db.query(`SELECT name FROM department`, function(err, data) {
+    db.query(`SELECT * FROM department`, function(err, data) {
         if(err) {
             console.error(err);
             return;
         }
-        const departmentNames = data.map(row => row.name)
+        const departmentNames = data.map((row) => row.name)
     inquirer
     .prompt([
         {
@@ -110,12 +110,16 @@ function addRole() {
         {
             type: 'list',
             message: 'Choose the department of the role',
-            name: 'department_id',
+            name: 'department_name',
             choices: departmentNames
         }
     ])
     .then(ans => {
-        const department = data.find(row => row.id === ans.department_id)
+        const department = data.find((row) => row.name === ans.department_name);
+        if(!department) {
+            console.error('Department not found!');
+            return;
+        }
         const department_id = department.id;
         db.query(`INSERT INTO role(title, salary, department_id) VALUES (?,?,?)`, [ans.role_name, ans.salary, department_id], function(err, data){
             if(err) {
